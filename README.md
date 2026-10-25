@@ -17,9 +17,10 @@ Each step is one module and writes to its own folder in `preliminary_results/`:
 ```bash
 python -m yelpnet.eda             # 0_eda/: whole-network stats and figures
 python -m yelpnet.city_selection  # 1_city_selection/: city comparison, then EDA on the chosen city
+python -m yelpnet.community_detection  # 2_communities/: Louvain communities and their restaurant categories
 ```
 
-`yelpnet/` also holds the shared modules: `data` (loading and caching), `graph` (network stats), `plot` (figures) and `city` (city subgraphs).
+`yelpnet/` also holds the shared modules: `data` (loading and caching), `graph` (network stats), `plot` (figures), `city` (city subgraphs) and `community` (communities and category preferences).
 
 ## EDA
 
@@ -40,3 +41,9 @@ A city network is the friendship subgraph among users who reviewed at least one 
 | Indianapolis, IN | 2,863 | 251K | 33.3K (43%) | 176K | 96.8% |
 
 We use **Philadelphia**. It ranks first on every column: the most restaurants and cuisine categories (382), the most reviews, the largest share of reviewers with friends, and the most dominant component. Its network keeps the whole network's shape (γ ≈ 2.31), so results there should carry over.
+
+## Communities
+
+Louvain on Philadelphia's largest component (93K users, 624K friendships) finds 396 communities with modularity 0.57. The 10 largest hold 97% of users. For each, we compare the restaurant categories its members review with the city overall (`category_lift.png`). Communities lean toward different cuisines, e.g. C3 reviews Chinese and Asian Fusion about 1.7× as often as the city, while C2 and C5 review Mexican about 40% less.
+
+As a check, we shuffle community labels across users 20 times, which keeps the sizes but removes the friendships. For the 7 large communities (4K+ users), the category mix differs from the city's 3–9× more than these random groups do (Jensen–Shannon divergence 0.04–0.12 vs 0.01–0.02, `communities.csv`). So friend groups have distinct tastes, though part of this may be geography (communities may be neighborhoods), which we have not separated yet. The 3 small communities are only 1.3–1.6× above random.

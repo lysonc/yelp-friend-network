@@ -52,6 +52,38 @@ def network(G, path, name="Yelp"):
     _save(fig, path)
 
 
+def community_graph(q, sizes, labels, path, name="Yelp"):
+    """Communities as nodes sized by members, edges as friendships between them."""
+    k = len(sizes)
+    G = nx.Graph()
+    G.add_nodes_from(range(k))
+    G.add_weighted_edges_from((i, j, q[i, j]) for i in range(k) for j in range(i + 1, k) if q[i, j] > 0)
+    w = np.array([d["weight"] for *_, d in G.edges(data=True)])
+    pos = nx.circular_layout(G)  # largest community first, so sizes never overlap
+    fig, ax = plt.subplots(figsize=(10, 10))
+    nx.draw_networkx_edges(G, pos, ax=ax, width=0.5 + 12 * w / w.max(), edge_color="gray", alpha=0.4)
+    nx.draw_networkx_nodes(G, pos, ax=ax, node_size=300 + 4000 * sizes / sizes.max(), node_color=range(k),
+                           cmap="tab10" if k <= 10 else "tab20", linewidths=0)
+    nx.draw_networkx_labels(G, pos, labels, ax=ax, font_size=9,
+                            bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="none", alpha=0.8))
+    ax.set_title(f"{name}: {k} largest Louvain communities (edge width = friendships between them)")
+    ax.axis("off")
+    _save(fig, path)
+
+
+def lift_heatmap(lift, sizes, path, name="Yelp"):
+    """log2 of category lift per community: red = reviewed more than the city average, blue = less."""
+    v = np.log2(lift.values)
+    lim = np.abs(v).max()
+    fig, ax = plt.subplots(figsize=(0.45 * lift.shape[1] + 3, 0.45 * lift.shape[0] + 2.5))
+    im = ax.imshow(v, cmap="RdBu_r", vmin=-lim, vmax=lim)
+    ax.set_xticks(range(lift.shape[1]), lift.columns, rotation=60, ha="right")
+    ax.set_yticks(range(lift.shape[0]), [f"C{c} ({s:,} users)" for c, s in zip(lift.index, sizes)])
+    fig.colorbar(im, ax=ax, shrink=0.7, label="log$_2$ lift (community share / city share)")
+    ax.set_title(f"{name}: restaurant categories reviewed by each community")
+    _save(fig, path)
+
+
 def _save(fig, path):
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=160, bbox_inches="tight")

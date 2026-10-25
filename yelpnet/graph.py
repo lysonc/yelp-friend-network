@@ -54,11 +54,14 @@ def summary(a, kmin):
     }
 
 
+def largest_component(a):
+    """Indices of the nodes in the largest connected component."""
+    _, labels = connected_components(a, directed=False)
+    return np.flatnonzero(labels == np.bincount(labels).argmax())
+
+
 def snowball(a, n, seed=0):
     """Subgraph induced by the first n nodes reached by BFS from a random node in the largest component."""
-    _, labels = connected_components(a, directed=False)
-    deg = degrees(a)
-    lcc = np.bincount(labels[deg > 0]).argmax()
-    start = np.random.default_rng(seed).choice(np.flatnonzero(labels == lcc))
+    start = np.random.default_rng(seed).choice(largest_component(a))
     nodes = breadth_first_order(a, start, directed=False, return_predecessors=False)[:n]
     return nx.from_scipy_sparse_array(a[nodes][:, nodes])
