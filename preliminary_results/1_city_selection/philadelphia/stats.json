@@ -1,0 +1,12 @@
+{
+  "nodes": 95888,
+  "edges": 625379,
+  "density": 0.00013603457303863696,
+  "mean_degree": 13.043947104955782,
+  "median_degree": 4.0,
+  "max_degree": 4278,
+  "powerlaw_gamma_k>=20": 2.312334688484161,
+  "components": 1336,
+  "largest_component_frac": 0.970809694643751,
+  "second_component_size": 5
+}
